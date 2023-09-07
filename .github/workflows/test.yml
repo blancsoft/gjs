@@ -1,0 +1,38 @@
+name: Testing
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.18.x, 1.19.x, 1.20.x, 1.21.x]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install tools
+        run: make setup
+      - name: Run test
+        env: { GOOS: js, GOARCH: wasm }
+        run: make test
+      - name: Check coverage
+        env:
+          TESTCOVERAGE_THRESHOLD: 85
+        run: |
+          if [ ! -f "coverage.out" ]; then
+            echo "Error: coverage.out is missing"
+            exit 1
+          fi
+          totalCoverage=`make coverage | grep total | grep -Eo '[0-9]+\.[0-9]+'`
+          echo "Required coverage threshold   : $TESTCOVERAGE_THRESHOLD %"
+          echo "Current test coverage         : $totalCoverage %"
+          if (( $(echo "$totalCoverage $TESTCOVERAGE_THRESHOLD" | awk '{print ($1 > $2)}') )); then
+              echo "OK"
+          else
+              echo "Current test coverage is below threshold."
+              exit 1
+          fi

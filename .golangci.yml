@@ -1,0 +1,35 @@
+linters:
+  disable:
+    - wsl
+    - paralleltest
+    - structcheck
+    - maligned
+    - deadcode
+    - scopelint
+    - varcheck
+    - exhaustivestruct
+    - rowserrcheck
+    - sqlclosecheck
+    - varnamelen
+    - gochecknoglobals
+    - golint
+    - nosnakecase
+    - ifshort
+    - interfacer
+    - wastedassign
+    - nlreturn
+    - gomnd
+    - gci
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - module
+    - performance
+    - style
+    - test
+    - unused
+

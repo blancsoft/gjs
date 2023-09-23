@@ -105,7 +105,7 @@ func TestConvertToJSValue(t *testing.T) { //nolint:funlen
 	// Run test cases
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			actual := ValueOf(tc.Input).Into()
+			actual := ValueOf(tc.Input)
 
 			isEqual := deepEqual(actual, tc.Expected)
 			if !isEqual {

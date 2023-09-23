@@ -1,6 +1,10 @@
+//go:build js && wasm
+
 package main
 
-import "github.com/chumaumenze/gjs"
+import (
+	"github.com/chumaumenze/gjs"
+)
 
 type Data struct {
 	Code    int

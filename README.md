@@ -29,21 +29,23 @@ GOOS=js GOARCH=wasm go get github.com/chumaumenze/gjs
 ```go
 package main
 
-import "github.com/chumaumenze/gjs"
+import (
+	"github.com/chumaumenze/gjs"
+)
 
 type Data struct {
-    Code    int
+	Code    int
 	Message string `json:"message"`
-    inner   any
+	inner   any
 }
 
 func main() {
-    data := Data{
-        Code: 200,
+	data := Data{
+		Code:    200,
 		Message: "Hello World!",
-        inner: "I am ignored",
+		inner:   "I am ignored",
 	}
-	v := gjs.ValueOf(data) // e.g. {Code: 200, "message": "Hello World!"}
+	_ = gjs.ValueOf(data) // e.g. {Code: 200, "message": "Hello World!"}
 }
 ```
 

@@ -1,10 +1,9 @@
-package gjs_test
+package errors_test
 
 import (
 	"syscall/js"
 	"testing"
 
-	. "github.com/chumaumenze/gjs"
 	"github.com/stretchr/testify/assert"
 )
 

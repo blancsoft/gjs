@@ -1,13 +1,32 @@
-//go:build js && wasm
-
 package gjs
 
 import (
 	"fmt"
+	"reflect"
 	"runtime"
 	"strings"
 	"syscall/js"
 )
+
+type PromiseHandlerFunc func(resolve, reject js.Value)
+
+func Promisify(jsFunc PromiseHandlerFunc) js.Value {
+	handler := js.FuncOf(func(this js.Value, args []js.Value) any {
+		resolve := args[0]
+		reject := args[1]
+
+		defer recoverPanics(reject)
+		jsFunc(resolve, reject)
+		return nil
+	})
+
+	return promise.New(handler)
+}
+
+func reflectionOf(v js.Value, t reflect.Type) (reflect.Value, error) {
+	// TODO: Implement this
+	return reflect.Value{}, nil
+}
 
 type CallerInfo struct {
 	File       string
@@ -22,9 +41,9 @@ func (c *CallerInfo) String() string {
 	return fmt.Sprintf("%s\t%s:%d", c.File, fn, c.LineNumber)
 }
 
-func RecoverPanics(callback any) {
+func recoverPanics(callback any) {
 	caller := GetCallerInfo(1)
-	warn := Console.Get("warn")
+	warn := console.Get("warn")
 	invalidArgMsg := caller.String() +
 		"\tWARNING: Callback argument expects a Go/JS value function."
 

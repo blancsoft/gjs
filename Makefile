@@ -4,7 +4,7 @@ SHELL := '/bin/bash'
 
 test: clean ## run all tests
 	@GOOS=js GOARCH=wasm go test -v -covermode=atomic -coverprofile=coverage.out \
-		-v -exec="$(shell go env GOROOT)/misc/wasm/go_js_wasm_exec" github.com/chumaumenze/gjs
+		-v -exec="$(shell go env GOROOT)/misc/wasm/go_js_wasm_exec" github.com/chumaumenze/gjs/...
 
 coverage: ## run coverage tool
 	@go tool cover -func=./coverage.out

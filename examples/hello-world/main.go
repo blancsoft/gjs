@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/chumaumenze/gjs"
+	"github.com/chumaumenze/gjs/internal"
 )
 
 type Data struct {
@@ -18,5 +18,5 @@ func main() {
 		Message: "Hello World!",
 		inner:   "I am ignored",
 	}
-	_ = gjs.ValueOf(data) // e.g. {Code: 200, "message": "Hello World!"}
+	_ = internal.ValueOf(data) // e.g. {Code: 200, "message": "Hello World!"}
 }

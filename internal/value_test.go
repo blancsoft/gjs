@@ -1,13 +1,14 @@
 //go:build js && wasm
 
-package gjs_test
+package internal_test
 
 import (
 	"fmt"
 	"syscall/js"
 	"testing"
 
-	. "github.com/chumaumenze/gjs"
+	. "github.com/chumaumenze/gjs/internal"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -107,7 +108,7 @@ func TestConvertToJSValue(t *testing.T) { //nolint:funlen
 		t.Run(tc.Name, func(t *testing.T) {
 			actual := ValueOf(tc.Input)
 
-			isEqual := deepEqual(actual, tc.Expected)
+			isEqual := DeepEqual(actual, tc.Expected)
 			if !isEqual {
 				stringify := js.Global().Get("JSON").Get("stringify")
 				errMsg := fmt.Sprintf("Comparison mismatch:\n\tx:  %s(%s)\n\tx:  %s(%s)\n",
@@ -133,60 +134,4 @@ func TestPromisify(t *testing.T) {
 	t.Run("promise handler was called", func(t *testing.T) {
 		assert.True(t, handlerCalled)
 	})
-}
-
-func deepEqual(x, y js.Value) bool {
-	if x.Type() != y.Type() {
-		return false
-	}
-
-	if x.Type() != js.TypeObject {
-		return x.Equal(y)
-	}
-	return compareObject(x, y)
-}
-
-func compareArray(x, y js.Value) bool {
-	arrayConstructor := js.Global().Get("Array")
-	isArrX := x.InstanceOf(arrayConstructor)
-	isArrY := y.InstanceOf(arrayConstructor)
-	if !(isArrX && isArrY) {
-		return false
-	}
-	if x.Length() != y.Length() {
-		return false
-	}
-	for i := 0; i < x.Length(); i++ {
-		if !deepEqual(x.Index(i), y.Index(i)) {
-			return false
-		}
-	}
-	return true
-}
-
-func compareObject(x, y js.Value) bool {
-	if x.Type() != js.TypeObject && x.Type() != y.Type() {
-		return false
-	}
-
-	if x.InstanceOf(js.Global().Get("Array")) {
-		return compareArray(x, y)
-	}
-
-	getKeys := js.Global().Get("Object").Get("keys")
-	xKeys := getKeys.Invoke(x)
-	yKeys := getKeys.Invoke(y)
-
-	if xKeys.Length() == yKeys.Length() {
-		for i := 0; i < xKeys.Length(); i++ {
-			key := xKeys.Index(i).String()
-			if !deepEqual(x.Get(key), y.Get(key)) {
-				return false
-			}
-		}
-
-		return true
-	}
-
-	return false
 }

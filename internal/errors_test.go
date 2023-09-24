@@ -1,10 +1,12 @@
-package errors_test
+package internal_test
 
 import (
 	"syscall/js"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	. "github.com/chumaumenze/gjs/internal"
 )
 
 func TestRecoverPanicsWithGoFunc(t *testing.T) {

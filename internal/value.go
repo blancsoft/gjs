@@ -1,6 +1,6 @@
 //go:build js && wasm
 
-package gjs
+package internal
 
 import (
 	"reflect"
@@ -8,20 +8,35 @@ import (
 )
 
 var (
-	global  = js.Global()
-	array   = global.Get("Array")
-	object  = global.Get("Object")
-	console = global.Get("console")
-	promise = global.Get("Promise")
-	jsGo    = global.Get("Go")
+	Global  = js.Global()
+	Array   = Global.Get("Array")
+	Object  = Global.Get("Object")
+	Console = Global.Get("console")
+	Promise = Global.Get("Promise")
+	Null    = js.ValueOf(nil)
+	JsGo    = Global.Get("Go")
 )
 
 func ValueOf(v any) js.Value {
 	switch v := v.(type) {
 	case nil, js.Value:
 		return js.ValueOf(v)
+	case []js.Value:
+		jsArray := Array.New()
+		for i, v := range v {
+			jsArray.SetIndex(i, v)
+		}
+		return jsArray
 	case reflect.Value:
 		return valueOf(v)
+	case []reflect.Value:
+		jsArray := Array.New()
+
+		for i := 0; i < len(v); i++ {
+			jsv := valueOf(v[i])
+			jsArray.SetIndex(i, jsv)
+		}
+		return jsArray
 	default:
 		return valueOf(reflect.ValueOf(v))
 	}
@@ -36,8 +51,11 @@ func valueOfFunc(v reflect.Value) js.Value {
 }
 
 func valueOfSlice(v reflect.Value) js.Value {
+	if v.IsNil() {
+		return Null
+	}
 	length := v.Len()
-	jsArray := array.New()
+	jsArray := Array.New()
 
 	for i := 0; i < length; i++ {
 		v := valueOf(v.Index(i))
@@ -48,7 +66,10 @@ func valueOfSlice(v reflect.Value) js.Value {
 }
 
 func valueOfMap(v reflect.Value) js.Value {
-	jsObject := object.New()
+	if v.IsNil() {
+		return Null
+	}
+	jsObject := Object.New()
 	for _, key := range v.MapKeys() {
 		jsObject.Set(key.String(), valueOf(v.MapIndex(key)))
 	}
@@ -57,7 +78,7 @@ func valueOfMap(v reflect.Value) js.Value {
 
 func valueOfComplex(v reflect.Value) js.Value {
 	c := v.Complex()
-	jsObject := object.New()
+	jsObject := Object.New()
 	jsObject.Set("real", real(c))
 	jsObject.Set("imag", imag(c))
 	return jsObject

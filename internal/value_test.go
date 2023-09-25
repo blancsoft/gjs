@@ -3,13 +3,10 @@
 package internal_test
 
 import (
-	"fmt"
 	"syscall/js"
 	"testing"
 
 	. "github.com/chumaumenze/gjs/internal"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConvertToJSValue(t *testing.T) { //nolint:funlen
@@ -107,17 +104,7 @@ func TestConvertToJSValue(t *testing.T) { //nolint:funlen
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			actual := ValueOf(tc.Input)
-
-			isEqual := DeepEqual(actual, tc.Expected)
-			if !isEqual {
-				stringify := js.Global().Get("JSON").Get("stringify")
-				errMsg := fmt.Sprintf("Comparison mismatch:\n\tx:  %s(%s)\n\tx:  %s(%s)\n",
-					actual.Type().String(), stringify.Invoke(actual).String(),
-					tc.Expected.Type().String(), stringify.Invoke(tc.Expected).String(),
-				)
-				fmt.Println(errMsg) //nolint:forbidigo
-			}
-			assert.True(t, isEqual)
+			DeepEqualJSTest(t, actual, tc.Expected)
 		})
 	}
 }
@@ -132,6 +119,6 @@ func TestPromisify(t *testing.T) {
 	Promisify(handler)
 
 	t.Run("promise handler was called", func(t *testing.T) {
-		assert.True(t, handlerCalled)
+		DeepEqualTest(t, true, handlerCalled)
 	})
 }

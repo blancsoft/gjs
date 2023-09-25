@@ -4,26 +4,22 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	. "github.com/chumaumenze/gjs/internal"
 )
 
 func TestRecoverPanicsWithGoFunc(t *testing.T) {
+	var msg string
 	expectedMsg := "panicking!"
 	callbackCalled := false
+	defer func() {
+		DeepEqualTest(t, true, callbackCalled)
+		DeepEqualTest(t, expectedMsg, msg)
+	}()
 
 	defer RecoverPanics(func(errMsg string) {
 		callbackCalled = true
-		t.Run("panic handler was called", func(t *testing.T) {
-			assert.True(t, callbackCalled)
-		})
-
-		t.Run("error message matches", func(t *testing.T) {
-			assert.Equal(t, errMsg, expectedMsg)
-		})
+		msg = errMsg
 	})
-
 	panic(expectedMsg)
 }
 

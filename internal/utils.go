@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall/js"
+	"testing"
 )
 
 type PromiseHandlerFunc func(resolve, reject js.Value)
@@ -40,11 +41,11 @@ func (c *CallerInfo) String() string {
 	i := strings.LastIndex(c.FuncName, ".")
 	fn := c.FuncName[i+1 : len(c.FuncName)]
 
-	return fmt.Sprintf("%s\t%s:%d", c.File, fn, c.LineNumber)
+	return fmt.Sprintf("%s\n\t%s:%d", c.File, fn, c.LineNumber)
 }
 
 func RecoverPanics(callback any) {
-	caller := GetCallerInfo(1)
+	caller := GetCallerInfo(3)
 	warn := Console.Get("warn")
 	invalidArgMsg := caller.String() +
 		"\tWARNING: Callback argument expects a Go/JS value function."
@@ -80,7 +81,7 @@ func GetCallerInfo(skip int) CallerInfo {
 	}
 }
 
-func DeepEqual(x, y js.Value) bool {
+func DeepEqualJS(x, y js.Value) bool {
 	if x.Type() != y.Type() {
 		return false
 	}
@@ -102,7 +103,7 @@ func compareArray(x, y js.Value) bool {
 		return false
 	}
 	for i := 0; i < x.Length(); i++ {
-		if !DeepEqual(x.Index(i), y.Index(i)) {
+		if !DeepEqualJS(x.Index(i), y.Index(i)) {
 			return false
 		}
 	}
@@ -125,7 +126,7 @@ func compareObject(x, y js.Value) bool {
 	if xKeys.Length() == yKeys.Length() {
 		for i := 0; i < xKeys.Length(); i++ {
 			key := xKeys.Index(i).String()
-			if !DeepEqual(x.Get(key), y.Get(key)) {
+			if !DeepEqualJS(x.Get(key), y.Get(key)) {
 				return false
 			}
 		}
@@ -168,4 +169,19 @@ func Await(awaitable js.Value) ([]js.Value, []js.Value) {
 func DebugValue(v js.Value, depth int) string {
 	insp := Global.Get("require").Invoke("util").Get("inspect")
 	return insp.Invoke(v, false, depth, false).String()
+}
+
+func DeepEqualJSTest(t *testing.T, expected, actual js.Value, msg ...string) {
+	if !DeepEqualJS(expected, actual) {
+		act := fmt.Sprintf("<%s: %s>", actual.Type().String(), DebugValue(actual, 4))
+		exp := fmt.Sprintf("<%s: %s>", expected.Type().String(), DebugValue(expected, 4))
+
+		t.Errorf("Not equal: \nexpected: %v\nactual  : %v\n%s\n", exp, act, strings.Join(msg, "\n"))
+	}
+}
+
+func DeepEqualTest(t *testing.T, expected, actual any, msg ...string) {
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Not equal: \nexpected: %v\nactual  : %v\n%s\n", expected, actual, strings.Join(msg, "\n"))
+	}
 }

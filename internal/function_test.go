@@ -6,8 +6,6 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	. "github.com/chumaumenze/gjs/internal"
 )
 
@@ -32,11 +30,9 @@ func TestFuncOf(t *testing.T) {
 
 	t.Run("basic function", func(t *testing.T) {
 		resolved, rejected := Await(rv)
-		if rejected != nil {
-			t.Fatal(DebugValue(rejected[0], 3))
-		}
-		assert.Equal(t, 1, len(resolved))
-		assert.Equal(t, 3, resolved[0].Int())
+		DeepEqualTest(t, true, rejected == nil)
+		DeepEqualTest(t, 1, len(resolved))
+		DeepEqualTest(t, 3, resolved[0].Int())
 	})
 }
 
@@ -49,10 +45,9 @@ func TestFuncOfVariadic(t *testing.T) {
 
 	t.Run("variadic function", func(t *testing.T) {
 		resolved, rejected := Await(rv)
-		if rejected != nil {
-			t.Fatal(DebugValue(rejected[0], 3))
-		}
-		assert.Equal(t, 1, len(resolved))
-		assert.Equal(t, 21, resolved[0].Int())
+
+		DeepEqualTest(t, true, rejected == nil)
+		DeepEqualTest(t, 1, len(resolved))
+		DeepEqualTest(t, 21, resolved[0].Int())
 	})
 }
